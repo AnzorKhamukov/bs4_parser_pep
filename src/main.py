@@ -11,6 +11,8 @@ from outputs import control_output
 from utils import get_response, find_tag
 from constants import BASE_DIR, MAIN_DOC_URL, MAIN_PEP_URL, EXPECTED_STATUS
 
+from collections import defaultdict
+
 
 def whats_new(session):
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
@@ -115,19 +117,15 @@ def download(session):
 
 
 def pep(session):
-    counter = {
-        'Accepted': 0,
-        'Active': 0,
-        'Deferred': 0,
-        'Draft': 0,
-        'Final': 0,
-        'Provisional': 0,
-        'Rejected': 0,
-        'Superseded': 0,
-        'Withdrawn': 0
-    }
+    counter = defaultdict(int)
+    for key in [
+        'Accepted', 'Active', 'Deferred', 'Draft', 'Final', 'Provisional',
+        'Rejected', 'Superseded', 'Withdrawn'
+    ]:
+        counter[key]
 
     response = get_response(session, MAIN_PEP_URL)
+
     if response is None:
         return
 
@@ -173,10 +171,9 @@ def pep(session):
 
         results = [('Статус', 'Количество')]
         total = 0
-        for key, value in counter.items():
-            results.append((key, value))
-            total += value
-        results.append(('Total:', total))
+        results.extend(counter.items())
+        total = sum(value for key, value in counter.items())
+    results.append(('Total:', total))
 
     return results
 
